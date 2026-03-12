@@ -6,7 +6,9 @@ terraform {
     key    = "linode/terraform.tfstate"
     region = "us-east-1"
 
-    endpoint = "https://ap-southeast-1.linodeobjects.com"
+    endpoint = "https://sg-sin-1.linodeobjects.com"
+
+    force_path_style = true
 
     skip_credentials_validation = true
     skip_metadata_api_check     = true
