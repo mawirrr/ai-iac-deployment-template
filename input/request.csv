@@ -1,2 +1,2 @@
-vm_name,region,plan,firewall
-demo-vm-1,ap-south,linode-2gb,true
+vm_name,region,plan,image,root_password
+demo-vm,ap-south,g6-standard-1,linode/ubuntu22.04,Password123!
