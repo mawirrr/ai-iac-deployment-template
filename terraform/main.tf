@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     linode = {
-      source = "linode/linode"
+      source  = "linode/linode"
       version = "~> 2.0"
     }
   }
@@ -11,11 +11,21 @@ provider "linode" {
   token = var.linode_token
 }
 
-resource "linode_instance" "vm" {
-  label  = var.vm_name
-  region = var.region
-  type   = var.plan
-  image  = "linode/ubuntu22.04"
+locals {
+  vm_requests = csvdecode(file("${path.module}/../input/request.csv"))
+}
 
-  root_pass = var.root_password
+resource "linode_instance" "vm" {
+
+  for_each = {
+    for vm in local.vm_requests :
+    vm.vm_name => vm
+  }
+
+  label  = each.value.vm_name
+  region = each.value.region
+  type   = each.value.plan
+  image  = each.value.image
+
+  root_pass = each.value.root_password
 }
