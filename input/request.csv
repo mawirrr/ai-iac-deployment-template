@@ -1,2 +1,2 @@
 vm_name,region,plan,firewall
-demo-vm,ap-south,linode-2gb,true
+demo-vm-1,ap-south,linode-2gb,true
