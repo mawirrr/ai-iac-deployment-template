@@ -18,14 +18,14 @@ locals {
 resource "linode_instance" "vm" {
 
   for_each = {
-    for vm in local.vm_requests :
-    vm.name => vm
+    for idx, vm in local.vm_requests :
+    "${vm.linode_label}-${idx}" => vm
   }
 
-  label  = each.value.vm_name
-  region = each.value.region
-  type   = each.value.plan
-  image  = each.value.image
+  label  = each.value.linode_label
+  region = each.value.linode_region
+  type   = each.value.linode_plan
+  image  = each.value.linode_image
 
   root_pass = each.value.root_password
 }
