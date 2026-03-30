@@ -1,4 +1,4 @@
 Timestamp,service_type,linode_region,linode_image,linode_plan,linode_label,linode_tags,root_password,cluster_label,k8s_region,k8s_version,k8s_node_plan,k8s_node_count
 
 
-3/30/2026 22:25:25,linode,sg-sin-2,linode/ubuntu24.04,g6-nanode-1,test4,test4,H@haha123,,,,,
+
