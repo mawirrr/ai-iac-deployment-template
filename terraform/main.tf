@@ -19,7 +19,7 @@ resource "linode_instance" "vm" {
 
   for_each = {
     for vm in local.vm_requests :
-    vm.vm_name => vm
+    vm.name => vm
   }
 
   label  = each.value.vm_name
