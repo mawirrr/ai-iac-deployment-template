@@ -1,2 +1,2 @@
 vm_name,region,plan,image,root_password
-demo-vm,ap-south,g6-standard-1,linode/ubuntu22.04,H@h@h@123
+demo-vm,ap-south,g6-standard-1,linode/ubuntu22.04,testpassH@h@h@123
