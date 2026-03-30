@@ -23,7 +23,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           
-      - name: Test S3 Write (FIXED)
+      - name: Test S3 Write (FINAL FIX)
         run: |
           echo "test" > test.txt
       
@@ -31,7 +31,9 @@ jobs:
             --bucket terraform-state \
             --key test.txt \
             --body test.txt \
-            --endpoint-url https://sg-sin-1.linodeobjects.com
+            --endpoint-url https://sg-sin-1.linodeobjects.com \
+            --no-verify-ssl \
+            --region us-east-1
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
