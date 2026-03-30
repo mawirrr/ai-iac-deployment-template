@@ -22,14 +22,16 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-
-      # ✅ TEST WRITE (biar yakin permission OK)
-      - name: Test S3 Write
+          
+      - name: Test S3 Write (FIXED)
         run: |
           echo "test" > test.txt
-          aws s3 cp test.txt s3://terraform-state/test.txt \
-            --endpoint-url https://sg-sin-1.linodeobjects.com \
-            --no-verify-ssl
+      
+          aws s3api put-object \
+            --bucket terraform-state \
+            --key test.txt \
+            --body test.txt \
+            --endpoint-url https://sg-sin-1.linodeobjects.com
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
