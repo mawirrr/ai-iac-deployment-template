@@ -22,16 +22,11 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          
-      - name: Setup AWS CLI
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
 
+      # ✅ TEST WRITE (biar yakin permission OK)
       - name: Test S3 Write
         run: |
+          aws --version
           echo "test" > test.txt
           aws s3 cp test.txt s3://terraform-state/test.txt \
             --endpoint-url https://sg-sin-1.linodeobjects.com
@@ -39,6 +34,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
+      # ✅ DEBUG LIST
       - name: Debug S3 Access
         run: |
           aws s3 ls --endpoint-url https://sg-sin-1.linodeobjects.com
