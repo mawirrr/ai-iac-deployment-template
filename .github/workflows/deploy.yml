@@ -42,3 +42,13 @@ jobs:
         run: |
           IP=$(terraform -chdir=terraform output -raw instance_ip)
           echo "ip=$IP" >> $GITHUB_OUTPUT
+
+
+      - name: Notify Slack
+        if: success()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data '{
+            "text": ":rocket: Deployment Success!\n*Service:* linode-vm\n*External IP:* '${{ steps.get_ip.outputs.ip }}'\n*URL:* http://'${{ steps.get_ip.outputs.ip }}'"
+          }' \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
