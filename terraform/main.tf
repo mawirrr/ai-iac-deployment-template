@@ -29,3 +29,7 @@ resource "linode_instance" "vm" {
 
   root_pass = each.value.root_password
 }
+
+output "instance_ip" {
+  value = values(linode_instance.vm)[0].ip_address
+}
