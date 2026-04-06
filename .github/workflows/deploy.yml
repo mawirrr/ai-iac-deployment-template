@@ -36,3 +36,9 @@ jobs:
           TF_VAR_linode_token: ${{ secrets.LINODE_TOKEN }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+      - name: Get Instance IP
+        id: get_ip
+        run: |
+          IP=$(terraform -chdir=terraform output -raw instance_ip)
+          echo "ip=$IP" >> $GITHUB_OUTPUT
