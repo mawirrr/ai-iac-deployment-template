@@ -2,3 +2,4 @@ Timestamp,service_type,linode_region,linode_image,linode_plan,linode_label,linod
 
 4/7/2026 0:52:56,linode,sg-sin-2,linode/ubuntu24.04,g6-nanode-1,test9,test9,S@ngatRahasia@1234!,,,,,
 4/7/2026 15:43:03,linode,sg-sin-2,linode/ubuntu24.04,g6-nanode-1,test10,test10,S@ngatr@hasia123!,,,,,
+4/28/2026 14:52:40,linode,id-cgk,linode/ubuntu24.04,g6-nanode-1,test22,test22,S@ngatr@hasia123!,,,,,
