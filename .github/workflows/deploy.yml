@@ -81,11 +81,12 @@ jobs:
         if: success()
         shell: bash
         run: |
+
           IP="${{ steps.get_ip.outputs.ip }}"
           PASSWORD="${{ steps.get_password.outputs.password }}"
           AI="${{ steps.ai_suggestion.outputs.suggestion }}"
 
-          read -r -d '' MESSAGE << EOM
+          MESSAGE=$(cat <<EOM
 :white_check_mark: Linode successfully created!
 
 :name_badge: Name: test123
@@ -104,6 +105,7 @@ ${PASSWORD}
 :bulb: AI Suggestion:
 ${AI}
 EOM
+)
 
           curl -X POST \
             -H 'Content-type: application/json' \
