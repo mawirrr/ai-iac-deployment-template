@@ -107,35 +107,29 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
       - name: Notify Slack
         if: success()
-        shell: bash
         env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           IP: ${{ steps.get_ip.outputs.ip }}
           PASSWORD: ${{ steps.get_password.outputs.password }}
           AI: ${{ steps.ai_suggestion.outputs.suggestion }}
         run: |
       
-          jq -n \
-            --arg ip "$IP" \
-            --arg password "$PASSWORD" \
-            --arg ai "$AI" \
-            '{
-              text:
-                "✅ Linode successfully created!\n\n" +
-      
-                "🌍 Public IP:\n" +
-                $ip + "\n\n" +
-      
-                "🔐 SSH Access:\n" +
-                "ssh root@" + $ip + "\n\n" +
-      
-                "🛡 Root Password:\n" +
-                $password + "\n\n" +
-      
-                "💡 AI Suggestion:\n" +
-                $ai
-            }' > payload.json
+          cat <<EOF > slack.json
+          {
+            "text": ":white_check_mark: Deployment Success!",
+            "blocks": [
+              {
+                "type": "section",
+                "text": {
+                  "type": "mrkdwn",
+                  "text": "*:white_check_mark: Linode successfully created!*\n\n*:earth_africa: Public IP:*\n$IP\n\n*:closed_lock_with_key: SSH Access:*\nssh root@$IP\n\n*:shield: Root Password:*\n$PASSWORD\n\n*:bulb: AI Suggestion:*\n$AI"
+                }
+              }
+            ]
+          }
+          EOF
       
           curl -X POST \
             -H 'Content-type: application/json' \
-            --data @payload.json \
-            "${{ secrets.SLACK_WEBHOOK_URL }}"
+            --data @slack.json \
+            $SLACK_WEBHOOK_URL
