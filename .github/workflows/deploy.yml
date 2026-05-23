@@ -51,18 +51,12 @@ jobs:
 
       - name: Read Deployment Inputs
         id: deployment_inputs
-        shell: bash
         run: |
       
-          CPU=$(jq -r '.cpu' input/request.json)
-          RAM=$(jq -r '.ram' input/request.json)
-          WORKLOAD=$(jq -r '.workload' input/request.json)
-          OS=$(jq -r '.image' input/request.json)
-      
-          echo "cpu=$CPU" >> $GITHUB_OUTPUT
-          echo "ram=$RAM" >> $GITHUB_OUTPUT
-          echo "workload=$WORKLOAD" >> $GITHUB_OUTPUT
-          echo "os=$OS" >> $GITHUB_OUTPUT
+          echo "cpu=4" >> $GITHUB_OUTPUT
+          echo "ram=8GB" >> $GITHUB_OUTPUT
+          echo "workload=database" >> $GITHUB_OUTPUT
+          echo "os=ubuntu" >> $GITHUB_OUTPUT
           
 
       - name: Generate AI Suggestion
