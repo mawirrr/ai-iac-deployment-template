@@ -4,6 +4,11 @@ terraform {
       source  = "linode/linode"
       version = "~> 2.0"
     }
+
+    random = {
+      source = "hashicorp/random"
+      version = "~> 3.0"
+    }
   }
 }
 
@@ -13,6 +18,16 @@ provider "linode" {
 
 locals {
   vm_requests = csvdecode(file("${path.module}/../input/request.csv"))
+}
+
+resource "random_password" "vm_password" {
+  for_each = {
+    for idx, vm in local.vm_requests :
+    "${vm.linode_label}-${idx}" => vm
+  }
+
+  length  = 16
+  special = true
 }
 
 resource "linode_instance" "vm" {
@@ -27,7 +42,7 @@ resource "linode_instance" "vm" {
   type   = each.value.linode_plan
   image  = each.value.linode_image
 
-  root_pass = each.value.root_password
+  root_pass = random_password.vm_password[each.key].result
 }
 
 output "instance_ip" {
