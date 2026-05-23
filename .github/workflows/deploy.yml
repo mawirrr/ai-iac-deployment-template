@@ -108,33 +108,34 @@ jobs:
       - name: Notify Slack
         if: success()
         shell: bash
+        env:
+          IP: ${{ steps.get_ip.outputs.ip }}
+          PASSWORD: ${{ steps.get_password.outputs.password }}
+          AI: ${{ steps.ai_suggestion.outputs.suggestion }}
         run: |
       
-          IP="${{ steps.get_ip.outputs.ip }}"
-          PASSWORD="${{ steps.get_password.outputs.password }}"
-          AI="${{ steps.ai_suggestion.outputs.suggestion }}"
-      
-          MESSAGE=$(jq -n \
+          jq -n \
             --arg ip "$IP" \
             --arg password "$PASSWORD" \
             --arg ai "$AI" \
             '{
               text:
-              "✅ Linode successfully created!\n\n" +
-              "🌍 Public IP:\n" +
-              $ip + "\n\n" +
+                "✅ Linode successfully created!\n\n" +
       
-              "🔐 SSH Access:\n" +
-              "ssh root@" + $ip + "\n\n" +
+                "🌍 Public IP:\n" +
+                $ip + "\n\n" +
       
-              "🛡 Root Password:\n" +
-              $password + "\n\n" +
+                "🔐 SSH Access:\n" +
+                "ssh root@" + $ip + "\n\n" +
       
-              "💡 AI Suggestion:\n" +
-              $ai
-            }')
+                "🛡 Root Password:\n" +
+                $password + "\n\n" +
+      
+                "💡 AI Suggestion:\n" +
+                $ai
+            }' > payload.json
       
           curl -X POST \
             -H 'Content-type: application/json' \
-            --data "$MESSAGE" \
+            --data @payload.json \
             "${{ secrets.SLACK_WEBHOOK_URL }}"
