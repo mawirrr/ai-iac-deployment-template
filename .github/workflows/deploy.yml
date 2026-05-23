@@ -43,6 +43,11 @@ jobs:
           IP=$(terraform -chdir=terraform output -raw instance_ip)
           echo "ip=$IP" >> $GITHUB_OUTPUT
 
+      - name: Get Instance Password
+        id: get_password
+        run: |
+          echo "passwords=$(terraform -chdir=terraform output -json vm_passwords)" >> $GITHUB_OUTPUT
+
 
       - name: Notify Slack
         if: success()
