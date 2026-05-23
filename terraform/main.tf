@@ -46,7 +46,7 @@ resource "linode_instance" "vm" {
 }
 
 output "instance_ip" {
-  value = values(linode_instance.vm)[0].ip_address
+  value = values(linode_instance.vm)[0].ipv4[0]
 }
 output "vm_passwords" {
   value = { for k, p in random_password.vm_password : k => p.result }
