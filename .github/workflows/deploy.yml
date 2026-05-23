@@ -112,7 +112,7 @@ jobs:
                 "type": "section",
                 "text": {
                   "type": "mrkdwn",
-                  "text": "*:white_check_mark: Linode successfully created!*\n\n*:earth_africa: Public IP:*\n$IP\n\n*:closed_lock_with_key: SSH Access:*\nssh root@$IP\n\n*:shield: Root Password:*\n$PASSWORD\n\n*:bulb: AI Suggestion:*\n$AI"
+                  "text": "*:white_check_mark: Linode successfully created!*\n\n*:earth_africa: Public IP:*\n$IP\n\n*:closed_lock_with_key: SSH Access:*\nssh root@$IP\n\n*:shield: Root Password:*\n$PASSWORD\n\n*:bulb: AI Suggestion:*\n```$AI```"
                 }
               }
             ]
