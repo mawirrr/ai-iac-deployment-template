@@ -79,7 +79,7 @@ jobs:
               "messages": [
                 {
                   "role": "system",
-                  "content": "You are a senior cloud architect. Provide only 3 short operational recommendations. Each recommendation must be on a new line using numbered format."
+                  "content": "You are a senior cloud architect. Provide exactly 3 short operational recommendations separated by commas only. No numbering."
                 },
                 {
                   "role": "user",
