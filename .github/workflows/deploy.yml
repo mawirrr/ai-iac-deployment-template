@@ -51,12 +51,22 @@ jobs:
 
       - name: Read Deployment Inputs
         id: deployment_inputs
+        shell: bash
         run: |
       
-          echo "cpu=4" >> $GITHUB_OUTPUT
-          echo "ram=8GB" >> $GITHUB_OUTPUT
-          echo "workload=database" >> $GITHUB_OUTPUT
-          echo "os=ubuntu" >> $GITHUB_OUTPUT
+          CPU=$(jq -r '.cpu' input/request.json)
+          RAM=$(jq -r '.ram' input/request.json)
+          WORKLOAD=$(jq -r '.workload' input/request.json)
+          OS=$(jq -r '.os // .image' input/request.json)
+          REGION=$(jq -r '.region' input/request.json)
+          COST=$(jq -r '.estimated_cost' input/request.json)
+      
+          echo "cpu=$CPU" >> $GITHUB_OUTPUT
+          echo "ram=$RAM" >> $GITHUB_OUTPUT
+          echo "workload=$WORKLOAD" >> $GITHUB_OUTPUT
+          echo "os=$OS" >> $GITHUB_OUTPUT
+          echo "region=$REGION" >> $GITHUB_OUTPUT
+          echo "cost=$COST" >> $GITHUB_OUTPUT
           
 
       - name: Generate AI Suggestion
@@ -68,6 +78,7 @@ jobs:
           RAM: ${{ steps.deployment_inputs.outputs.ram }}
           WORKLOAD: ${{ steps.deployment_inputs.outputs.workload }}
           OS: ${{ steps.deployment_inputs.outputs.os }}
+          REGION: ${{ steps.deployment_inputs.outputs.region }}
       
         run: |
       
@@ -75,6 +86,7 @@ jobs:
           CPU: $CPU
           RAM: $RAM
           OS: $OS
+          Region: $REGION
           Workload: $WORKLOAD"
       
           RESPONSE=$(jq -n \
@@ -84,7 +96,7 @@ jobs:
               messages: [
                 {
                   role: "system",
-                  content: "You are a senior cloud architect. Provide exactly 3 short operational recommendations separated by commas only. No numbering."
+                  content: "You are a senior cloud architect. Return output in exactly this format:\n\nRecommendations:\n<3 concise recommendations separated by commas>\n\nRisk Insight:\n<1 concise workload risk insight>\n\nRecommendations must be workload-aware:\n- database => backups, IOPS, monitoring\n- web => CDN, HTTPS, caching\n- AI => GPU and cost optimization\n- dev => snapshots and dev tooling"
                 },
                 {
                   role: "user",
@@ -93,11 +105,9 @@ jobs:
               ],
               temperature: 0.3
             }' | curl -s https://api.openai.com/v1/chat/completions \
-              -H "Content-Type: application/json" \
-              -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
-              -d @-)
-      
-          echo "$RESPONSE"
+                -H "Content-Type: application/json" \
+                -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
+                -d @-)
       
           AI_TEXT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
       
@@ -113,22 +123,33 @@ jobs:
           IP: ${{ steps.get_ip.outputs.ip }}
           PASSWORD: ${{ steps.get_password.outputs.password }}
           AI: ${{ steps.aisuggestion.outputs.suggestion }}
+          REGION: ${{ steps.deployment_inputs.outputs.region }}
+          COST: ${{ steps.deployment_inputs.outputs.cost }}
       
         run: |
       
-          MESSAGE="*:white_check_mark: Linode successfully created!*
-      
-          *:earth_africa: Public IP:*
+          MESSAGE=$(cat <<EOF
+          *:white_check_mark: Linode successfully created!*
+          
+          *:earth_africa: Region:*
+          $REGION
+          
+          *:globe_with_meridians: Public IP:*
           $IP
-      
+          
           *:closed_lock_with_key: SSH Access:*
           ssh root@$IP
-      
+          
           *:shield: Root Password:*
           $PASSWORD
-      
-          *:bulb: AI Suggestion:*
-          $AI"
+          
+          *:moneybag: Estimated Monthly Cost:*
+          $COST
+          
+          *:bulb: AI Operational Insight:*
+          $AI
+          EOF
+          )
       
           jq -n \
             --arg message "$MESSAGE" \
@@ -144,8 +165,6 @@ jobs:
                 }
               ]
             }' > slack.json
-      
-          cat slack.json
       
           curl -X POST \
             -H "Content-type: application/json" \
