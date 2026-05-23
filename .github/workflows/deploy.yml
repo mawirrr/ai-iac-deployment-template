@@ -49,41 +49,32 @@ jobs:
           PASSWORD=$(terraform -chdir=terraform output -json vm_passwords | jq -r '.[keys[0]]')
           echo "password=$PASSWORD" >> $GITHUB_OUTPUT
 
-      - name: Generate AI Suggestion
-        id: ai_suggestion
+      - name: Read Deployment Inputs
+        id: deployment_inputs
+        shell: bash
         run: |
-
-          RESPONSE=$(curl https://api.openai.com/v1/chat/completions \
-            -s \
-            -H "Content-Type: application/json" \
-            -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
-            -d '{
-              "model": "gpt-4.1-mini",
-              "messages": [
-                {
-                  "role": "system",
-                  "content": "You are a senior cloud architect."
-                },
-                {
-                  "role": "user",
-                  "content": "A Linode VM was deployed with type g6-nanode-1 running Debian 12 for a web application. Give concise operational recommendations."
-                }
-              ]
-            }')
-
-          AI_TEXT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
-
-          echo "suggestion<<EOF" >> $GITHUB_OUTPUT
-          echo "$AI_TEXT" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
+      
+          CPU=$(jq -r '.cpu' input/request.json)
+          RAM=$(jq -r '.ram' input/request.json)
+          WORKLOAD=$(jq -r '.workload' input/request.json)
+          OS=$(jq -r '.image' input/request.json)
+      
+          echo "cpu=$CPU" >> $GITHUB_OUTPUT
+          echo "ram=$RAM" >> $GITHUB_OUTPUT
+          echo "workload=$WORKLOAD" >> $GITHUB_OUTPUT
+          echo "os=$OS" >> $GITHUB_OUTPUT
+          
 
       - name: Generate AI Suggestion
         id: aisuggestion
         shell: bash
+      
         env:
-          CPU: ${{ github.event.inputs.cpu }}
-          RAM: ${{ github.event.inputs.ram }}
-          WORKLOAD: ${{ github.event.inputs.workload }}
+          CPU: ${{ steps.deployment_inputs.outputs.cpu }}
+          RAM: ${{ steps.deployment_inputs.outputs.ram }}
+          WORKLOAD: ${{ steps.deployment_inputs.outputs.workload }}
+          OS: ${{ steps.deployment_inputs.outputs.os }}
+      
         run: |
       
           RESPONSE=$(curl -s https://api.openai.com/v1/chat/completions \
@@ -94,11 +85,11 @@ jobs:
               "messages": [
                 {
                   "role": "system",
-                  "content": "You are a senior cloud architect. Provide only 3 short bullet point operational recommendations. Maximum 1 sentence each. No introduction. No conclusion. No markdown."
+                  "content": "You are a senior cloud architect. Provide only 3 short operational recommendations."
                 },
                 {
                   "role": "user",
-                  "content": "Linode VM deployment configuration: CPU='"$CPU"', RAM='"$RAM"', workload='"$WORKLOAD"'"
+                  "content": "Linode VM deployment configuration: CPU='"$CPU"', RAM='"$RAM"', OS='"$OS"', workload='"$WORKLOAD"'"
                 }
               ],
               "temperature": 0.3
@@ -116,7 +107,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           IP: ${{ steps.get_ip.outputs.ip }}
           PASSWORD: ${{ steps.get_password.outputs.password }}
-          AI: ${{ steps.ai_suggestion.outputs.suggestion }}
+          AI: ${{ steps.aisuggestion.outputs.suggestion }}
         run: |
       
           cat <<EOF > slack.json
