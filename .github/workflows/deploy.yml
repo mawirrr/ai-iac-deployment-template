@@ -94,7 +94,7 @@ jobs:
                 },
                 {
                   "role": "user",
-                  "content": "A Linode VM was deployed with type g6-nanode-1 running Debian 12 for a web application."
+                  "content": "A Linode VM was deployed with ${CPU} CPU and ${RAM} RAM for a ${WORKLOAD} workload. Give only short operational recommendations."
                 }
               ],
               "temperature": 0.4
