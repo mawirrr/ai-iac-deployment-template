@@ -112,24 +112,41 @@ jobs:
           IP: ${{ steps.get_ip.outputs.ip }}
           PASSWORD: ${{ steps.get_password.outputs.password }}
           AI: ${{ steps.aisuggestion.outputs.suggestion }}
+      
         run: |
       
-          cat <<EOF > slack.json
-          {
-            "text": ":white_check_mark: Deployment Success!",
-            "blocks": [
-              {
-                "type": "section",
-                "text": {
-                  "type": "mrkdwn",
-                  "text": "*:white_check_mark: Linode successfully created!*\n\n*:earth_africa: Public IP:*\n$IP\n\n*:closed_lock_with_key: SSH Access:*\nssh root@$IP\n\n*:shield: Root Password:*\n$PASSWORD\n\n*:bulb: AI Suggestion:*\n```$AI```"
+          TEXT=":white_check_mark: *Linode successfully created!*
+      
+          :earth_africa: *Public IP:*
+          $IP
+      
+          :closed_lock_with_key: *SSH Access:*
+          ssh root@$IP
+      
+          :shield: *Root Password:*
+          $PASSWORD
+      
+          :bulb: *AI Suggestion:*
+          $AI"
+      
+          jq -n \
+            --arg text "$TEXT" \
+            '{
+              text: "Deployment Success!",
+              blocks: [
+                {
+                  type: "section",
+                  text: {
+                    type: "mrkdwn",
+                    text: $text
+                  }
                 }
-              }
-            ]
-          }
-          EOF
+              ]
+            }' > slack.json
+      
+          cat slack.json
       
           curl -X POST \
-            -H 'Content-type: application/json' \
+            -H "Content-type: application/json" \
             --data @slack.json \
-            $SLACK_WEBHOOK_URL
+            "$SLACK_WEBHOOK_URL"
