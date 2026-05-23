@@ -77,28 +77,31 @@ jobs:
           echo "$AI_TEXT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-      - name: Notify Slack
-        if: success()
+      - name: Generate AI Suggestion
+        id: ai_suggestion
         shell: bash
         run: |
-          IP="${{ steps.get_ip.outputs.ip }}"
-          PASSWORD="${{ steps.get_password.outputs.password }}"
-          AI="${{ steps.ai_suggestion.outputs.suggestion }}"
-
-          MESSAGE=":white_check_mark: Linode successfully created!\n\n"
-          MESSAGE="${MESSAGE}:name_badge: Name: test123\n"
-          MESSAGE="${MESSAGE}:earth_africa: Public IP: ${IP}\n\n"
-          MESSAGE="${MESSAGE}:desktop_computer: Specs:\n"
-          MESSAGE="${MESSAGE}- Type: g6-nanode-1\n"
-          MESSAGE="${MESSAGE}- OS: Debian 12\n\n"
-          MESSAGE="${MESSAGE}:closed_lock_with_key: SSH Access:\n"
-          MESSAGE="${MESSAGE}ssh root@${IP}\n\n"
-          MESSAGE="${MESSAGE}:shield: Root Password:\n"
-          MESSAGE="${MESSAGE}${PASSWORD}\n\n"
-          MESSAGE="${MESSAGE}:bulb: AI Suggestion:\n"
-          MESSAGE="${MESSAGE}${AI}"
-
-          curl -X POST \
-            -H "Content-type: application/json" \
-            --data "$(jq -n --arg text "$MESSAGE" '{text: $text}')" \
-            "${{ secrets.SLACK_WEBHOOK_URL }}"
+      
+          RESPONSE=$(curl -s https://api.openai.com/v1/chat/completions \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.OPENAI_API_KEY }}" \
+            -d '{
+              "model": "gpt-4.1-mini",
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are a senior cloud architect. Only provide short operational recommendations in bullet points. Never include command outputs, package logs, terminal logs, or explanations."
+                },
+                {
+                  "role": "user",
+                  "content": "A Linode VM was deployed with type g6-nanode-1 running Debian 12 for a web application."
+                }
+              ],
+              "temperature": 0.4
+            }')
+      
+          AI_TEXT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
+      
+          echo "suggestion<<EOF" >> $GITHUB_OUTPUT
+          echo "$AI_TEXT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
