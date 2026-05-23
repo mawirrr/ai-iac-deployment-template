@@ -78,7 +78,7 @@ jobs:
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Generate AI Suggestion
-        id: ai_suggestion
+        id: aisuggestion
         shell: bash
         run: |
       
