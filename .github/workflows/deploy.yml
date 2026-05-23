@@ -54,19 +54,33 @@ jobs:
         shell: bash
         run: |
       
-          CPU=$(jq -r '.cpu' input/request.json)
-          RAM=$(jq -r '.ram' input/request.json)
-          WORKLOAD=$(jq -r '.workload' input/request.json)
-          OS=$(jq -r '.os // .image' input/request.json)
-          REGION=$(jq -r '.region' input/request.json)
-          COST=$(jq -r '.estimated_cost' input/request.json)
+          LAST_LINE=$(tail -n 1 input/request.csv)
+      
+          IFS=',' read -r TIMESTAMP SERVICE REGION IMAGE PLAN LABEL TAGS PASSWORD CLUSTER K8S_REGION K8S_VERSION K8S_NODE_COUNT <<< "$LAST_LINE"
+      
+          OS=$(basename "$IMAGE")
+      
+          if [[ "$PLAN" == "g6-nanode-1" ]]; then
+            CPU="1"
+            RAM="1GB"
+          elif [[ "$PLAN" == "g6-standard-1" ]]; then
+            CPU="1"
+            RAM="2GB"
+          elif [[ "$PLAN" == "g6-standard-2" ]]; then
+            CPU="2"
+            RAM="4GB"
+          else
+            CPU="unknown"
+            RAM="unknown"
+          fi
+      
+          WORKLOAD="general"
       
           echo "cpu=$CPU" >> $GITHUB_OUTPUT
           echo "ram=$RAM" >> $GITHUB_OUTPUT
           echo "workload=$WORKLOAD" >> $GITHUB_OUTPUT
           echo "os=$OS" >> $GITHUB_OUTPUT
           echo "region=$REGION" >> $GITHUB_OUTPUT
-          echo "cost=$COST" >> $GITHUB_OUTPUT
           
 
       - name: Generate AI Suggestion
@@ -124,7 +138,6 @@ jobs:
           PASSWORD: ${{ steps.get_password.outputs.password }}
           AI: ${{ steps.aisuggestion.outputs.suggestion }}
           REGION: ${{ steps.deployment_inputs.outputs.region }}
-          COST: ${{ steps.deployment_inputs.outputs.cost }}
       
         run: |
       
@@ -143,8 +156,6 @@ jobs:
           *:shield: Root Password:*
           $PASSWORD
           
-          *:moneybag: Estimated Monthly Cost:*
-          $COST
           
           *:bulb: AI Operational Insight:*
           $AI
