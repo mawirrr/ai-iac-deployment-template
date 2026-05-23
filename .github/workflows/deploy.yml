@@ -116,10 +116,22 @@ jobs:
       
         run: |
       
+          MESSAGE="*:white_check_mark: Linode successfully created!*
+      
+          *:earth_africa: Public IP:*
+          $IP
+      
+          *:closed_lock_with_key: SSH Access:*
+          ssh root@$IP
+      
+          *:shield: Root Password:*
+          $PASSWORD
+      
+          *:bulb: AI Suggestion:*
+          $AI"
+      
           jq -n \
-            --arg ip "$IP" \
-            --arg password "$PASSWORD" \
-            --arg ai "$AI" \
+            --arg message "$MESSAGE" \
             '{
               text: "Deployment Success!",
               blocks: [
@@ -127,12 +139,7 @@ jobs:
                   type: "section",
                   text: {
                     type: "mrkdwn",
-                    text:
-                    "*:white_check_mark: Linode successfully created!*\n\n" +
-                    "*:earth_africa: Public IP:*\n" + $ip + "\n\n" +
-                    "*:closed_lock_with_key: SSH Access:*\nssh root@" + $ip + "\n\n" +
-                    "*:shield: Root Password:*\n" + $password + "\n\n" +
-                    "*:bulb: AI Suggestion:*\n" + $ai
+                    text: $message
                   }
                 }
               ]
