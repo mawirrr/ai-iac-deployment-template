@@ -80,6 +80,10 @@ jobs:
       - name: Generate AI Suggestion
         id: aisuggestion
         shell: bash
+        env:
+          CPU: ${{ github.event.inputs.cpu }}
+          RAM: ${{ github.event.inputs.ram }}
+          WORKLOAD: ${{ github.event.inputs.workload }}
         run: |
       
           RESPONSE=$(curl -s https://api.openai.com/v1/chat/completions \
@@ -90,14 +94,14 @@ jobs:
               "messages": [
                 {
                   "role": "system",
-                  "content": "You are a senior cloud architect. Only provide short operational recommendations in bullet points. Never include command outputs, package logs, terminal logs, or explanations."
+                  "content": "You are a senior cloud architect. Provide only 3 short bullet point operational recommendations. Maximum 1 sentence each. No introduction. No conclusion. No markdown."
                 },
                 {
                   "role": "user",
-                  "content": "A Linode VM was deployed with ${CPU} CPU and ${RAM} RAM for a ${WORKLOAD} workload. Give only short operational recommendations."
+                  "content": "Linode VM deployment configuration: CPU='"$CPU"', RAM='"$RAM"', workload='"$WORKLOAD"'"
                 }
               ],
-              "temperature": 0.4
+              "temperature": 0.3
             }')
       
           AI_TEXT=$(echo "$RESPONSE" | jq -r '.choices[0].message.content')
@@ -105,6 +109,7 @@ jobs:
           echo "suggestion<<EOF" >> $GITHUB_OUTPUT
           echo "$AI_TEXT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
+          
       - name: Notify Slack
         if: success()
         env:
