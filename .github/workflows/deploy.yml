@@ -59,6 +59,18 @@ jobs:
           IFS=',' read -r TIMESTAMP SERVICE REGION IMAGE PLAN LABEL TAGS PASSWORD CLUSTER K8S_REGION K8S_VERSION K8S_NODE_COUNT <<< "$LAST_LINE"
       
           OS=$(basename "$IMAGE")
+          if [[ "$REGION" == "sg-sin-2" ]]; then
+            REGION_NAME="Singapore"
+          
+          elif [[ "$REGION" == "id-cgk" ]]; then
+            REGION_NAME="Jakarta"
+          
+          elif [[ "$REGION" == "jp-osa" ]]; then
+            REGION_NAME="Osaka"
+          
+          else
+            REGION_NAME="$REGION"
+          fi
       
           if [[ "$PLAN" == "g6-nanode-1" ]]; then
             CPU="1"
@@ -73,14 +85,40 @@ jobs:
             CPU="unknown"
             RAM="unknown"
           fi
+          if [[ "$PLAN" == "g6-nanode-1" ]]; then
+            PLAN_RISK="Low-memory shared instance may experience performance bottlenecks under sustained workloads."
+          
+          elif [[ "$PLAN" == "g6-standard-1" ]]; then
+            PLAN_RISK="Entry-level compute may limit scaling during peak traffic."
+          
+          else
+            PLAN_RISK="General-purpose configuration appears balanced for moderate workloads."
+          fi
       
-          WORKLOAD="general"
+          LABEL_LOWER=$(echo "$LABEL" | tr '[:upper:]' '[:lower:]')
+          
+          if [[ "$LABEL_LOWER" == *"db"* ]]; then
+            WORKLOAD="database"
+          
+          elif [[ "$LABEL_LOWER" == *"web"* ]]; then
+            WORKLOAD="web"
+          
+          elif [[ "$LABEL_LOWER" == *"ai"* ]]; then
+            WORKLOAD="ai"
+          
+          elif [[ "$LABEL_LOWER" == *"dev"* ]]; then
+            WORKLOAD="dev"
+          
+          else
+            WORKLOAD="general"
+          fi
       
           echo "cpu=$CPU" >> $GITHUB_OUTPUT
           echo "ram=$RAM" >> $GITHUB_OUTPUT
           echo "workload=$WORKLOAD" >> $GITHUB_OUTPUT
           echo "os=$OS" >> $GITHUB_OUTPUT
-          echo "region=$REGION" >> $GITHUB_OUTPUT
+          echo "region=$REGION_NAME" >> $GITHUB_OUTPUT
+          echo "plan_risk=$PLAN_RISK" >> $GITHUB_OUTPUT
           
 
       - name: Generate AI Suggestion
@@ -93,6 +131,7 @@ jobs:
           WORKLOAD: ${{ steps.deployment_inputs.outputs.workload }}
           OS: ${{ steps.deployment_inputs.outputs.os }}
           REGION: ${{ steps.deployment_inputs.outputs.region }}
+          PLAN_RISK: ${{ steps.deployment_inputs.outputs.plan_risk }}
       
         run: |
       
@@ -101,7 +140,8 @@ jobs:
           RAM: $RAM
           OS: $OS
           Region: $REGION
-          Workload: $WORKLOAD"
+          Workload: $WORKLOAD
+          Plan Risk: $PLAN_RISK"
       
           RESPONSE=$(jq -n \
             --arg prompt "$PROMPT" \
