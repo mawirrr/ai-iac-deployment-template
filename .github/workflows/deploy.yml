@@ -46,7 +46,7 @@ jobs:
       - name: Get Instance Password
         id: get_password
         run: |
-          PASSWORD=$(terraform -chdir=terraform output -raw vm_password)
+          PASSWORD=$(terraform -chdir=terraform output -json vm_passwords | jq -r '.[keys[0]]')
           echo "password=$PASSWORD" >> $GITHUB_OUTPUT
 
       - name: Generate AI Suggestion
