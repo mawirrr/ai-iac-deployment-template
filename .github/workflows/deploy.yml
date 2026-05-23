@@ -109,13 +109,32 @@ jobs:
         if: success()
         shell: bash
         run: |
+      
           IP="${{ steps.get_ip.outputs.ip }}"
           PASSWORD="${{ steps.get_password.outputs.password }}"
-          AI="${{ steps.aisuggestion.outputs.suggestion }}"
+          AI="${{ steps.ai_suggestion.outputs.suggestion }}"
       
-          MESSAGE="✅ Linode successfully created!\n\n🌍 Public IP:\n${IP}\n\n🔐 SSH Access:\nssh root@${IP}\n\n🛡 Root Password:\n${PASSWORD}\n\n💡 AI Suggestion:\n${AI}"
+          MESSAGE=$(jq -n \
+            --arg ip "$IP" \
+            --arg password "$PASSWORD" \
+            --arg ai "$AI" \
+            '{
+              text:
+              "✅ Linode successfully created!\n\n" +
+              "🌍 Public IP:\n" +
+              $ip + "\n\n" +
+      
+              "🔐 SSH Access:\n" +
+              "ssh root@" + $ip + "\n\n" +
+      
+              "🛡 Root Password:\n" +
+              $password + "\n\n" +
+      
+              "💡 AI Suggestion:\n" +
+              $ai
+            }')
       
           curl -X POST \
             -H 'Content-type: application/json' \
-            --data "$(jq -n --arg text "$MESSAGE" '{text:$text}')" \
+            --data "$MESSAGE" \
             "${{ secrets.SLACK_WEBHOOK_URL }}"
