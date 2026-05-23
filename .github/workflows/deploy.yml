@@ -52,8 +52,10 @@ jobs:
       - name: Notify Slack
         if: success()
         run: |
+          IP=$(terraform -chdir=terraform output -raw instance_ip)
+          PASSWORD=${{ steps.get_password.outputs.passwords }}
           curl -X POST -H 'Content-type: application/json' \
           --data '{
-            "text": ":rocket: Deployment Success!\n*Service:* linode-vm\n*External IP:* '${{ steps.get_ip.outputs.ip }}'\n*URL:* http://'${{ steps.get_ip.outputs.ip }}'"
+            "text": ":rocket: Deployment Success!\n*Service:* linode-vm\n*External IP:* '${IP}'\n*Password:* '${PASSWORD}'\n*URL:* http://'${IP}'"
           }' \
           ${{ secrets.SLACK_WEBHOOK_URL }}
