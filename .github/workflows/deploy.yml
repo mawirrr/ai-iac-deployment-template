@@ -46,16 +46,18 @@ jobs:
       - name: Get Instance Password
         id: get_password
         run: |
-          echo "passwords=$(terraform -chdir=terraform output -json vm_passwords)" >> $GITHUB_OUTPUT
+          PASSWORD=$(terraform -chdir=terraform output -json vm_passwords | jq -r '.[keys[0]]')
+          echo "password=$PASSWORD" >> $GITHUB_OUTPUT
 
 
       - name: Notify Slack
         if: success()
         run: |
           IP=$(terraform -chdir=terraform output -raw instance_ip)
-          PASSWORD=${{ steps.get_password.outputs.passwords }}
+          PASSWORD=${{ steps.get_password.outputs.password }}
+      
           curl -X POST -H 'Content-type: application/json' \
           --data '{
-            "text": ":rocket: Deployment Success!\n*Service:* linode-vm\n*External IP:* '${IP}'\n*Password:* '${PASSWORD}'\n*URL:* http://'${IP}'"
+            "text": ":rocket: Deployment Success!\n*Service:* linode-vm\n*External IP:* '${IP}'\n*Root Password:* '${PASSWORD}'\n*URL:* http://'${IP}'"
           }' \
           ${{ secrets.SLACK_WEBHOOK_URL }}
