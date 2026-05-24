@@ -178,11 +178,15 @@ jobs:
           PASSWORD: ${{ steps.get_password.outputs.password }}
           AI: ${{ steps.aisuggestion.outputs.suggestion }}
           REGION: ${{ steps.deployment_inputs.outputs.region }}
+          APPROVER: ${{ github.actor }}
       
         run: |
       
           MESSAGE=$(cat <<EOF
           *:white_check_mark: Linode successfully created!*
+
+          *:white_check_mark: Approved By:*
+          $APPROVER
           
           *:earth_africa: Region:*
           $REGION
