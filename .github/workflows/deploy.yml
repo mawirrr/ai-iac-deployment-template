@@ -17,6 +17,11 @@ jobs:
 
       - uses: hashicorp/setup-terraform@v3
 
+      - name: Start Deployment Timer
+        id: timer_start
+        run: |
+          echo "start=$(date +%s)" >> $GITHUB_OUTPUT
+
       - name: Terraform Init
         run: terraform -chdir=terraform init
         env:
@@ -169,6 +174,20 @@ jobs:
           echo "$AI_TEXT" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
           
+      - name: Calculate Deployment Duration
+        id: duration
+        run: |
+      
+          START=${{ steps.timer_start.outputs.start }}
+          END=$(date +%s)
+      
+          DURATION=$((END - START))
+      
+          MINUTES=$((DURATION / 60))
+          SECONDS=$((DURATION % 60))
+      
+          echo "time=${MINUTES} minutes ${SECONDS} seconds" >> $GITHUB_OUTPUT
+      
       - name: Notify Slack
         if: success()
       
@@ -179,6 +198,7 @@ jobs:
           AI: ${{ steps.aisuggestion.outputs.suggestion }}
           REGION: ${{ steps.deployment_inputs.outputs.region }}
           APPROVER: ${{ github.actor }}
+          DURATION: ${{ steps.duration.outputs.time }}
       
         run: |
       
@@ -187,6 +207,9 @@ jobs:
 
           *:white_check_mark: Approved By:*
           $APPROVER
+
+          *:hourglass_flowing_sand: Deployment Duration:*
+          $DURATION
           
           *:earth_africa: Region:*
           $REGION
