@@ -1,1 +1,2 @@
 Timestamp,service_type,linode_region,linode_image,linode_plan,linode_label,linode_tags,cluster_label,k8s_region,k8s_version,k8s_node_plan,k8s_node_count
+5/25/2026 11:58:23,linode,sg-sin-2,linode/debian12,g6-nanode-1,test123,test123,,,,,
